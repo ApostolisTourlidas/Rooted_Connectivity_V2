@@ -6,8 +6,16 @@
     "configurations": [
         {
             "type": "java",
+            "name": "DirectedEdge",
+            "request": "launch",
+            "mainClass": "DirectedEdge",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
             "name": "GabowSCC",
             "request": "launch",
+            "args": "tinyEWD.txt",
             "mainClass": "GabowSCC",
             "projectName": "Rooted_Connectivity_V2_5c83a69"
         },
