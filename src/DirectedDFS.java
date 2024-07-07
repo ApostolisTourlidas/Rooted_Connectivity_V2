@@ -1,25 +1,3 @@
-/******************************************************************************
- *  Compilation:  javac DirectedDFS.java
- *  Execution:    java DirectedDFS digraph.txt s
- *  Dependencies: Digraph.java Bag.java In.java StdOut.java
- *  Data files:   https://algs4.cs.princeton.edu/42digraph/tinyDG.txt
- *                https://algs4.cs.princeton.edu/42digraph/mediumDG.txt
- *                https://algs4.cs.princeton.edu/42digraph/largeDG.txt
- *
- *  Determine single-source or multiple-source reachability in a digraph
- *  using depth first search.
- *  Runs in O(E + V) time.
- *
- *  % java DirectedDFS tinyDG.txt 1
- *  1
- *
- *  % java DirectedDFS tinyDG.txt 2
- *  0 1 2 3 4 5
- *
- *  % java DirectedDFS tinyDG.txt 1 2 6
- *  0 1 2 3 4 5 6 8 9 10 11 12
- *
- ******************************************************************************/
 /**
  *  The {@code DirectedDFS} class represents a data type for
  *  determining the vertices reachable from a given source vertex <em>s</em>
@@ -136,7 +114,7 @@ public class DirectedDFS {
      *
      * @param args the command-line arguments
      */
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
 
         // read in digraph from command-line argument
         In in = new In(args[0]);
@@ -157,6 +135,6 @@ public class DirectedDFS {
             if (dfs.marked(v)) System.out.print(v + " ");
         }
         System.out.println();
-    }
+    }*/
 
 }

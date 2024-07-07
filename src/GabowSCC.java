@@ -180,6 +180,7 @@ public class GabowSCC {
         System.out.println(m + " components");
 
         // compute list of vertices in each strong component
+        @SuppressWarnings("unchecked")
         Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
         for (int i = 0; i < m; i++) {
             components[i] = new LinkedList<Integer>();
