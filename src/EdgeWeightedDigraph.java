@@ -1,6 +1,9 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.Stack;
 
 /**
@@ -40,7 +43,7 @@ public class EdgeWeightedDigraph {
     private int E;                      // number of edges in this digraph
     private Bag<DirectedEdge>[] adj;    // adj[v] = adjacency list for vertex v
     private int[] indegree;             // indegree[v] = indegree of vertex v
-
+    private double[] weightedInDegree;  // weightedInDegree[v] = total weight of incoming edges of vertex v 
     private int[] parent;               // array to store path
 
     /**
@@ -49,11 +52,13 @@ public class EdgeWeightedDigraph {
      * @param  V the number of vertices
      * @throws IllegalArgumentException if {@code V < 0}
      */
-    /*public EdgeWeightedDigraph(int V) {
+    @SuppressWarnings("unchecked")
+    public EdgeWeightedDigraph(int V) {
         if (V < 0) throw new IllegalArgumentException("Number of vertices in a Digraph must be non-negative");
         this.V = V;
         this.E = 0;
         this.indegree = new int[V];
+        this.weightedInDegree = new double[V];
         adj = (Bag<DirectedEdge>[]) new Bag[V];
         for (int v = 0; v < V; v++)
             adj[v] = new Bag<DirectedEdge>();
@@ -99,6 +104,7 @@ public class EdgeWeightedDigraph {
             this.V = in.readInt();
             if (V < 0) throw new IllegalArgumentException("number of vertices in a Digraph must be non-negative");
             indegree = new int[V];
+            this.weightedInDegree = new double[V];
             adj = (Bag<DirectedEdge>[]) new Bag[V];
             for (int v = 0; v < V; v++) {
                 adj[v] = new Bag<DirectedEdge>();
@@ -130,6 +136,7 @@ public class EdgeWeightedDigraph {
         this.V = G.V();
         this.E = G.E();
         this.indegree = new int[V];
+        this.weightedInDegree = new double[V];
         this.adj = (Bag<DirectedEdge>[]) new Bag[V];
         for (int v = 0; v < G.V(); v++){
             this.indegree[v] = G.indegree(v);
@@ -183,12 +190,13 @@ public class EdgeWeightedDigraph {
      *         and {@code V-1}
      */
     public void addEdge(DirectedEdge e) {
-        int v = e.from();
-        int w = e.to();
+        int u = e.from();
+        int v = e.to();
+        validateVertex(u);
         validateVertex(v);
-        validateVertex(w);
-        adj[v].add(e);
-        indegree[w]++;
+        adj[u].add(e);
+        indegree[v]++;
+        weightedInDegree[v] += e.weight();
         E++;
     }
 
@@ -249,6 +257,20 @@ public class EdgeWeightedDigraph {
     }
 
     /**
+     * Returns the upper bound of egde weights
+     */
+    public double maxCapacity(){
+        Bag<DirectedEdge> list = (Bag<DirectedEdge>) edges();
+        double U = 0; 
+            for (DirectedEdge e : list) {
+                if (e.weight()>U) {
+                    U = e.weight();
+                }
+            }
+        return U;
+    }
+
+    /**
      * Returns a string representation of this edge-weighted digraph.
      *
      * @return the number of vertices <em>V</em>, followed by the number of edges <em>E</em>,
@@ -267,8 +289,8 @@ public class EdgeWeightedDigraph {
         return s.toString();
     }
 
-    //computes the min cut edges of a digraph
-    public void minCut(int s,int t){
+    //computes the min cut edges of a digraph from root???? it has not implemented yet?????
+    private void minCut(int s,int t){
         //create a residual graph using the copy of the original graph
         EdgeWeightedDigraph residualG = new EdgeWeightedDigraph(this);
         int V = residualG.V();
@@ -362,6 +384,53 @@ public class EdgeWeightedDigraph {
         return visited[t];
     }
 
+    // Rooted Sparsification Lemma Implementation
+    private EdgeWeightedDigraph ComputeContractedG(int r, double U, int k){
+        EdgeWeightedDigraph contractedG = new EdgeWeightedDigraph(this.V()); // Create contracted graph without edges
+        int V = this.V();
+        List<Integer> highInDegree = new ArrayList<>();
+        // vertices with weighted in-degree >= (1+U)*k
+        for (int v = 0; v < V; v++){
+            if (v != r && this.weightedInDegree[v] >= (1 + U) * k){
+                highInDegree.add(v);
+            }
+        }
+        // print for testing
+        for (int v = 0; v < V; v++){
+            // System.out.println("total weight of "+ v + " is: " + weightedInDegree[v]);
+        }
+        for (Integer element : highInDegree){
+            System.out.println("edw eimai: " + element);
+        }
+        // create contrected graph
+        for (int v = 0; v < V; v++){
+            for (DirectedEdge e : this.adj(v)){
+                int from = e.from();
+                int to = e.to();
+                double weight = e.weight();
+
+                if (highInDegree.contains(from)){
+                    from = r;
+                }
+                if (highInDegree.contains(to)){
+                    to = r;
+                }
+                contractedG.addEdge(new DirectedEdge(from, to, weight));
+            }
+        }
+        // reverse so that adjacency list is in same order as original (asc) ???? it doesnt work-check again ????
+        /*for (int v = 0; v < V; v++) {
+            Stack<DirectedEdge> reverse = new Stack<DirectedEdge>();
+            for (DirectedEdge e : contractedG.adj[v]) {
+                reverse.push(e);
+            }
+            while (reverse.isEmpty()==false) {
+                contractedG.adj[v].add(reverse.pop());
+            }
+        }*/
+        return contractedG;
+    }
+
     /**
      * Unit tests the {@code EdgeWeightedDigraph} data type.
      *
@@ -370,8 +439,16 @@ public class EdgeWeightedDigraph {
     public static void main(String[] args) {
         In in = new In(args[0]);
         EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
-        G.minCut( 0, 7);
-        // System.out.println(G);
+        Scanner input = new Scanner(System.in);
+        System.out.println("Choose the rooted vertex:");
+        int r = input.nextInt();
+        G.validateVertex(r);
+        EdgeWeightedDigraph contractedG = G.ComputeContractedG(r, G.maxCapacity(), 1);
+        System.out.println("Contracted G:\n" + contractedG.toString());
+        System.out.println("---------------------\n");
+        System.out.println("Original G:\n" + G.toString());
+        // G.minCut( 0, 7);
+        
         
     }
 
