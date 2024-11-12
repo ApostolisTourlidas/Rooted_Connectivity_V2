@@ -1,6 +1,7 @@
+package graphpackage;
 public class DirectedEdge {
-    private final int v;
-    private final int w;
+    private int v;
+    private int w;
     private double weight;
 
     /**

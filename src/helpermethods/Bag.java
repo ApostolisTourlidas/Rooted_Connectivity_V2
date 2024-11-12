@@ -1,4 +1,4 @@
-
+package helpermethods;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -58,6 +58,24 @@ public class Bag<Item> implements Iterable<Item> {
      */
     public int size() {
         return n;
+    }
+
+    // cutsom method for removing elemet from a bag
+    public void remove(Item item){
+        Node<Item> temp = first;
+        if (first.item == item){
+            first = temp.next;
+            return;
+        }
+        while (temp != null && temp.next != null){
+            if (temp.next.item == item){
+                // delete item
+                Node<Item> deleteNode = temp.next;
+                temp.next = temp.next.next;
+                deleteNode.next = null;
+            }
+            temp = temp.next;
+        }
     }
 
     /**

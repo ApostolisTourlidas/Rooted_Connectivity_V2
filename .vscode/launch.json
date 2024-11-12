@@ -6,6 +6,14 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "args": "tinyEWD.txt",
+            "mainClass": "mainpackage.Main",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
             "name": "DirectedEdge",
             "request": "launch",
             "mainClass": "DirectedEdge",
@@ -43,7 +51,6 @@
             "type": "java",
             "name": "EdgeWeightedDigraph",
             "request": "launch",
-            "args": "tinyEWD.txt",
             "mainClass": "EdgeWeightedDigraph",
             "projectName": "Rooted_Connectivity_V2_5c83a69"
         },

@@ -1,3 +1,4 @@
+package helpermethods;
 /******************************************************************************
  *  Compilation:  javac TransitiveClosure.java
  *  Execution:    java TransitiveClosure filename.txt
@@ -29,6 +30,8 @@
  *   12:   T  T  T  T  T  T           T  T  T  T
  *
  ******************************************************************************/
+
+import graphpackage.EdgeWeightedDigraph;
 
 /**
  *  The {@code TransitiveClosure} class represents a data type for
@@ -93,28 +96,28 @@ public class TransitiveClosure {
      *
      * @param args the command-line arguments
      */
-    public static void main(String[] args) {
-        In in = new In(args[0]);
-        EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+    // public static void main(String[] args) {
+    //     In in = new In(args[0]);
+    //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
 
-        TransitiveClosure tc = new TransitiveClosure(G);
+    //     TransitiveClosure tc = new TransitiveClosure(G);
 
-        // print header
-        System.out.print("     ");
-        for (int v = 0; v < G.V(); v++)
-            System.out.printf("%3d", v);
-        System.out.println();
-        System.out.println("--------------------------------------------");
+    //     // print header
+    //     System.out.print("     ");
+    //     for (int v = 0; v < G.V(); v++)
+    //         System.out.printf("%3d", v);
+    //     System.out.println();
+    //     System.out.println("--------------------------------------------");
 
-        // print transitive closure
-        for (int v = 0; v < G.V(); v++) {
-            System.out.printf("%3d: ", v);
-            for (int w = 0; w < G.V(); w++) {
-                if (tc.reachable(v, w)) System.out.printf("  T");
-                else                    System.out.printf("   ");
-            }
-            System.out.println();
-        }
-    }
+    //     // print transitive closure
+    //     for (int v = 0; v < G.V(); v++) {
+    //         System.out.printf("%3d: ", v);
+    //         for (int w = 0; w < G.V(); w++) {
+    //             if (tc.reachable(v, w)) System.out.printf("  T");
+    //             else                    System.out.printf("   ");
+    //         }
+    //         System.out.println();
+    //     }
+    // }
 
 }
