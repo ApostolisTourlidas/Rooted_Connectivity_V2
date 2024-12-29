@@ -16,7 +16,7 @@ public class ContractedG {
     }
     
     // Rooted Sparsification Lemma Implementation
-    public EdgeWeightedDigraph computeContractedG(int r, double U, int k){
+    public EdgeWeightedDigraph computeContractedG(int r, double U, int k, int flag){
         EdgeWeightedDigraph contractedG = new EdgeWeightedDigraph(G.V()); // Create contracted graph without edges
         int V = G.V();
         List<Integer> highInDegree = new ArrayList<>();
@@ -86,25 +86,20 @@ public class ContractedG {
             }
         }
         // If i want to check the temp's list elements after removing duplicates
-        // System.out.println("Meta to remove");
-        // for (int v = 0; v < V; v++){
-        //     System.out.print(v + ": ");
-        //     for (DirectedEdge e2 : uniqueEdges[v]){
-        //         System.out.print(e2 + " ");
-        //     }
-        //     System.out.println("\n");
-        // }
+        System.out.println("Meta to remove");
+        for (int v = 0; v < V; v++){
+            System.out.print(v + ": ");
+            for (DirectedEdge e2 : contractedG.adj[v]){
+                System.out.print(e2 + " ");
+            }
+            System.out.println("\n");
+        }
         
-        // reverse so that adjacency list is in same order as original (asc) ???? it doesnt work-check again ????
-        /*for (int v = 0; v < V; v++) {
-            Stack<DirectedEdge> reverse = new Stack<DirectedEdge>();
-            for (DirectedEdge e : contractedG.adj[v]) {
-                reverse.push(e);
-            }
-            while (reverse.isEmpty()==false) {
-                contractedG.adj[v].add(reverse.pop());
-            }
-        }*/
+        // validation flag about number of contracted graph's edges
+        if (contractedG.E() < (1 + U) * V * k){
+            flag = 1;
+        }
+
         return contractedG;
     }
 }

@@ -78,6 +78,17 @@ public class Bag<Item> implements Iterable<Item> {
         }
     }
 
+    // custom method for computing the length of a bag (probably i will not use it???)
+    public int count(){
+        Node<Item> temp = first;
+        int count = 0;
+        while (temp != null){
+            count++;
+            temp = temp.next;
+        }
+        return count;
+    }
+
     /**
      * Adds the item to this bag.
      *
@@ -117,26 +128,6 @@ public class Bag<Item> implements Iterable<Item> {
             Item item = current.item;
             current = current.next;
             return item;
-        }
-    }
-
-    /**
-     * Unit tests the {@code Bag} data type.
-     *
-     * @param args the command-line arguments
-     */
-    public static void main(String[] args) {
-        Bag<String> bag = new Bag<String>();
-        Scanner scanner = new Scanner(System.in);
-        while (scanner.hasNext()) {
-            String item = scanner.next();
-            bag.add(item);
-        }
-        scanner.close();
-
-        System.out.println("size of bag = " + bag.size());
-        for (String s : bag) {
-            System.out.println(s);
         }
     }
 

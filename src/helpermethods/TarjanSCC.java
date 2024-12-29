@@ -131,7 +131,11 @@ public class TarjanSCC {
     public boolean stronglyConnected(int v, int w) {
         validateVertex(v);
         validateVertex(w);
-        return id[v] == id[w];
+        if (id[v] == id[w]){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**
@@ -164,8 +168,7 @@ public class TarjanSCC {
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
 
-    public void findScc(EdgeWeightedDigraph G){
-
+    public void printSCC(int k){
         // number of connected components
         int m = this.count();
         System.out.println(m + " components");
@@ -179,14 +182,20 @@ public class TarjanSCC {
             components[this.id(v)].add(v);
         }
 
-        // print results
+        double U = G.maxCapacity();
+
+        // print results and filter components based on size range [k, (1+U)*k]
+        System.out.println("Components within size range [" + k + ", " + (int)((1 + U) * k) + "]:");
         for (int i = 0; i < m; i++) {
-            System.out.print("Component no" + (i+1) + " contains vertices: ");
-            for (int v : components[i]) {
-                System.out.print(v + " ");
+            int size = components[i].size();
+            System.out.println(size);
+            if (size >= k && size <= (1 + U) * k){
+                System.out.print("Component no" + (i+1) + " contains vertices: ");
+                for (int v : components[i]) {
+                    System.out.print(v + " ");
+                }
+                System.out.println(" (Size: " + size + ")");
             }
-            System.out.println();
         }
     }
-
 }
