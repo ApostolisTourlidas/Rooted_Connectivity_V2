@@ -1,7 +1,9 @@
 package helpermethods;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -20,43 +22,93 @@ public class MinCut{
         this.lamda = Double.POSITIVE_INFINITY;
     }
 
+    // SOS check again?????????????????????
     // Iterate over vertices in the graph to find the value of lamda (Lemma 5)
-    public double rootedConnectivity(int root){
+    public void rootedConnectivity(int root){
         int V = G.V();
-        double minCutValue = Double.POSITIVE_INFINITY;
-        double U = G.maxCapacity();
-        Set<Integer> sinkOfMinCut = new HashSet<>();
+        double currentValue = Double.POSITIVE_INFINITY;
 
         // compute min-cut for root to vertex t
         for (int t = 0; t < V; t++){
-            
+            this.sink = new HashSet<>();
             if (t != root) {
-                this.sink = new HashSet<>();
                 maxFlowMinCut(G, root, t);
 
-                // Lemma 5 verification
-                if (this.sink.size() == 1){
-                    if (this.lamda < minCutValue){
-                        minCutValue = this.lamda;
-                        sinkOfMinCut = new HashSet<>(this.sink);
+                // Lemma 5 verification????????????????
+                if (this.sink.size() > 1){
+                    if (this.lamda < G.maxCapacity() * this.sink.size()){
+                        System.out.println("Lemma 5 holds, for root: " + root + " and for target: " + t);
+                    }else{
+                        System.out.println("Lemma 5 is not valid, for root: " + root + " and for target: " + t);
                     }
-                }else { //sink size > 1
-                    if (this.lamda < U * this.sink.size()){
-                        minCutValue = this.lamda;
-                        sinkOfMinCut = new HashSet<>(this.sink);
+                }else{
+                    System.out.println("sink component is a singleton, for root: " + root + " and for target: " + t);
+                }
+
+                System.out.println("Target: " + t);
+                System.out.println("Min-Cut Value: " + this.lamda);
+                System.out.println("Sink Component: " + this.sink);
+                System.out.println("");
+
+            }
+        }
+
+        // // compare to find the best min cut all over the graph
+        // for (int v=0; v<V; v++){
+        //     if (maxFlow[v] < bestMinCutValue){
+        //         bestMinCutValue = maxFlow[v];
+        //         bestS = v;
+        //         bestT = sink[v];
+        //     }
+        // }
+
+        // // System.out.println("Max flow-min cut(global): " + bestMinCutValue);
+        // System.out.println("Min Cut edges(global):");
+        // for (DirectedEdge e : bestMinCutEdges[bestS]) {
+        //         System.out.println(e.from() + " - " + e.to()); //print the min cut edges
+        // }
+    }
+
+    // Iterate over vertices in the graph to find the value of lamda (Lemma 8)
+    public Map<String, Object> rootedConnectivity(int root, int k){
+        int V = G.V();
+        double singletonMinCutValue = Double.POSITIVE_INFINITY;
+        Set<Integer> singletonSink = new HashSet<>();
+
+        // compute min-cut for root to vertex t
+        for (int t = 0; t < V; t++){
+            this.sink = new HashSet<>();
+            if (t != root) {
+                maxFlowMinCut(G, root, t);
+
+                // Lemma 8 verification
+                if (this.sink.size() == 1){
+                    if (this.lamda < singletonMinCutValue){
+                        singletonMinCutValue = this.lamda;
+                        singletonSink = new HashSet<>(this.sink);
                     }
                 }
             }
         }
-        return minCutValue;
+
+        // Print values before returning them
+        System.out.println("Min r-cut for singleton component is: " + singletonMinCutValue);
+        System.out.println("Singleton component is: " + singletonSink);
+        
+        Map<String, Object> singleton = new HashMap<>();
+        singleton.put("singletonMinCutValue", singletonMinCutValue);
+        singleton.put("singletonSink", singletonSink);
+        return singleton;
     }
 
     // Iterate over SCCs in the contracted graph to find the value of lamda (Lemma 8)
-    public double rootedConnectivityForSCCs(EdgeWeightedDigraph contractedG){
+    public void rootedConnectivityForSCCs(EdgeWeightedDigraph contractedG, Map<String, Object> singleton){
         GabowSCC scc = new GabowSCC(contractedG);
 
-        double minCutValue = Double.POSITIVE_INFINITY;
-        Set<Integer> sink = new HashSet<>();
+        // Returned values from rootedConnectivity passed as parameter with singleton
+        double minCutValue = (double) singleton.get("singletonMinCutValue");
+        @SuppressWarnings("unchecked")
+        Set<Integer> bestSink = (Set<Integer>) (singleton.get("singletonSink"));
 
         // Iterate over SCCs
         for (int i = 0; i < scc.count(); i++) {
@@ -69,44 +121,48 @@ public class MinCut{
 
             // Compute λ(r, T) for the SCC by adding the weight of the incoming in T edges
             double sccCutValue = 0.0;
-            for (int v : sccVertices){
-                for (DirectedEdge e : contractedG.adj(v)) {
-                    if (!sccVertices.contains(e.from()) && sccVertices.contains(e.to())) {
-                        sccCutValue += e.weight();
-                    }
+            for (DirectedEdge e : contractedG.edges()) {
+                if (!sccVertices.contains(e.from()) && sccVertices.contains(e.to())) {
+                    sccCutValue += e.weight();
                 }
             }
 
             // Update minimum cut if SCC cut value is smaller
             if (sccCutValue < minCutValue) {
                 minCutValue = sccCutValue;
-                sink = new HashSet<>(sccVertices);
+                bestSink = new HashSet<>(sccVertices);
             }
         }
 
         System.out.println("Final Minimum r-Cut Value: " + minCutValue);
-        System.out.println("Final Sink Component of minimum cut: " + sink);
-
-        return minCutValue;
+        System.out.println("Final Sink Component: " + bestSink);
     }
 
     // iterate over sampled vertices in the graph to find the value of lamda (Lemma 7)
-    public double rootedConnectivityForSampledVertices(int root, Set<Integer> sampledVertices){
-        double minCutValue = Double.POSITIVE_INFINITY;
+    public void rootedConnectivityForSampledVertices(int root, Set<Integer> sampledVertices){
 
         // compute min-cut for root to sampled vertex t
         for (int t : sampledVertices){
             this.sink = new HashSet<>();
             maxFlowMinCut(G, root, t);
-            double currentValue = this.lamda;
             System.out.println("Target: " + t);
             System.out.println("Min-Cut Value: " + this.lamda);
             System.out.println("Sink Component: " + this.sink);
             System.out.println("");
-            minCutValue = Math.min(currentValue, minCutValue);
-        }
 
-        return minCutValue;
+            // Check Lemma 7 - na dw ti elegxo tha valw kai poio k tha sygkrinw
+            // if (sinkSize > k1) {
+            //     System.out.println("Sampled vertex " + t + " has sink size " + sinkSize + " > k1 (" + k1 + ")");
+            // } else {
+            //     System.out.println("Sampled vertex " + t + " satisfies Lemma 7.");
+            // }
+
+            // if (sink.size() > sinkSize) {
+            //     System.out.println("Sink size " + sink.size() + " exceeds threshold " + sinkSize);
+            // } else {
+            //     System.out.println("Sink size " + sink.size() + " satisfies Lemma 7.");
+            // }
+        }
     }
 
     //computes the min cut edges of a digraph from s to t (Ford Fulkerson algorithm)

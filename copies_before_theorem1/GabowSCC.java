@@ -1,11 +1,17 @@
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Stack;
+package helpermethods;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 import graphpackage.DirectedEdge;
 import graphpackage.EdgeWeightedDigraph;
-import helpermethods.TarjanSCC;
-import helpermethods.TransitiveClosure;
 
 /******************************************************************************
  *  Compilation:  javac GabowSCC.java
@@ -37,11 +43,11 @@ import helpermethods.TransitiveClosure;
  *  determines whether two vertices are in the same strong component;
  *  and the <em>count</em> operation determines the number of strong
  *  components.
-
- *  The <em>component identifier</em> of a component is one of the
- *  vertices in the strong component: two vertices have the same component
- *  identifier if and only if they are in the same strong component.
-
+ *  <p>
+ *  The <em>component identifier</em> of a vertex is an integer between
+ *  0 and <em>k</em>–1, where <em>k</em> is the number of strong components.
+ *  Two vertices have the same component identifier if and only if they
+ *  are in the same strong component.
  *  <p>
  *  This implementation uses the Gabow's algorithm.
  *  The constructor takes &Theta;(<em>V</em> + <em>E</em>) time,
@@ -68,38 +74,51 @@ public class GabowSCC {
     private int count;               // number of strongly-connected components
     private Stack<Integer> stack1;
     private Stack<Integer> stack2;
-
+    private Map<Integer, Set<Integer>> components;
+    private EdgeWeightedDigraph G;
 
     /**
      * Computes the strong components of the digraph {@code G}.
      * @param G the digraph
      */
+    @SuppressWarnings("unchecked")
     public GabowSCC(EdgeWeightedDigraph G) {
         marked = new boolean[G.V()];
         stack1 = new Stack<Integer>();
         stack2 = new Stack<Integer>();
         id = new int[G.V()];
         preorder = new int[G.V()];
-        for (int v = 0; v < G.V(); v++)
-            id[v] = -1;
+        components = new HashMap<>();
 
+        for (int v = 0; v < G.V(); v++){
+            id[v] = -1;
+        }
+        
         for (int v = 0; v < G.V(); v++) {
             if (!marked[v]) dfs(G, v);
+        }
+
+        for (int v = 0; v < G.V(); v++) {
+            components.computeIfAbsent(id[v], key -> new HashSet<>()).add(v);
         }
 
         // check that id[] gives strong components
         assert check(G);
     }
-
+    
     private void dfs(EdgeWeightedDigraph G, int v) {
         marked[v] = true;
         preorder[v] = pre++;
         stack1.push(v);
         stack2.push(v);
-        for (DirectedEdge w : G.adj(v)) {
-            if (!marked[w.to()]) dfs(G, w.to());
-            else if (id[w.to()] == -1) {
-                while (preorder[stack2.peek()] > preorder[w.to()])
+
+        for (DirectedEdge e : G.adj(v)) {
+            int w = e.to();
+            if (!marked[w]) {
+                dfs(G, w);
+            }
+            else if (id[w] == -1) {
+                while (preorder[stack2.peek()] > preorder[w])
                     stack2.pop();
             }
         }
@@ -169,23 +188,65 @@ public class GabowSCC {
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
 
+    // check an tha to xrisimopoihsw sto case 2????????????????
+    public void printSCC(int k){
+        // number of connected components
+        int m = this.count();
+        System.out.println(m + " components");
 
-    /**
-     * Unit tests the {@code GabowSCC} data type.
-     *
-     * @param args the command-line arguments
-     */
+        // compute list of vertices in each strong component
+        Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
+        for (int i = 0; i < m; i++) {
+            components[i] = new LinkedList<Integer>();
+        }
+        for (int v = 0; v < G.V(); v++) {
+            components[this.id(v)].add(v);
+        }
+
+        double U = G.maxCapacity();
+
+        // print results and filter components based on size range [k, (1+U)*k]
+        System.out.println("Components within size range [" + k + ", " + (int)((1 + U) * k) + "]:");
+        for (int i = 0; i < m; i++) {
+            int size = components[i].size();
+            System.out.println(size);
+            if (size >= k && size <= (1 + U) * k){
+                System.out.print("Component no" + (i+1) + " contains vertices: ");
+                for (int v : components[i]) {
+                    System.out.print(v + " ");
+                }
+                System.out.println(" (Size: " + size + ")");
+            }
+        }
+    }
+
+    public Set<Integer> getVerticesInSCC(int i){
+        return components.getOrDefault(i, new HashSet<>());
+    }
+
+    public Map<Integer, Set<Integer>> getAllSCCs(){
+        return components;
+    }
+
+    public void printAllSCCs() {
+        for (Map.Entry<Integer, Set<Integer>> entry : components.entrySet()) {
+            int i = entry.getKey();
+            Set<Integer> vertices = entry.getValue();
+            System.out.println("SCC " + i + ": " + vertices);
+        }
+    }
+    
     // public static void main(String[] args) {
-    //     In in = new In(args[0]);
+    //     In in = new In("tinySCC.txt");    
     //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
     //     GabowSCC scc = new GabowSCC(G);
+    //     scc.printAllSCCs();
 
     //     // number of connected components
     //     int m = scc.count();
     //     System.out.println(m + " components");
 
     //     // compute list of vertices in each strong component
-    //     @SuppressWarnings("unchecked")
     //     Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
     //     for (int i = 0; i < m; i++) {
     //         components[i] = new LinkedList<Integer>();
@@ -203,5 +264,4 @@ public class GabowSCC {
     //     }
 
     // }
-
 }

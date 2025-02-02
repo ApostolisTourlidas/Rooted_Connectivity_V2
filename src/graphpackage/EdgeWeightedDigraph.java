@@ -175,7 +175,7 @@ public class EdgeWeightedDigraph {
     }
 
     // throw an IllegalArgumentException unless {@code 0 <= v < V}
-    private void validateVertex(int v) {
+    public void validateVertex(int v) {
         if (v < 0 || v >= V)
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
@@ -258,9 +258,8 @@ public class EdgeWeightedDigraph {
      * Returns the upper bound of egde weights
      */
     public double maxCapacity(){
-        Bag<DirectedEdge> list = (Bag<DirectedEdge>) edges();
         double U = 0; 
-            for (DirectedEdge e : list) {
+            for (DirectedEdge e : edges()) {
                 if (e.weight()>U) {
                     U = e.weight();
                 }

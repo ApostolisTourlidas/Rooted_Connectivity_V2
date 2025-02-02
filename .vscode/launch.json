@@ -6,9 +6,16 @@
     "configurations": [
         {
             "type": "java",
+            "name": "GabowSCC",
+            "request": "launch",
+            "mainClass": "helpermethods.GabowSCC",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
             "name": "Main",
             "request": "launch",
-            "args": "tinyEWD.txt",
+            // "args": "tinyEWD.txt",
             "mainClass": "mainpackage.Main",
             "projectName": "Rooted_Connectivity_V2_5c83a69"
         },
