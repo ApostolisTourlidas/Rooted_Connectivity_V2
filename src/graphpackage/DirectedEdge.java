@@ -3,6 +3,9 @@ public class DirectedEdge {
     private int v;
     private int w;
     private double weight;
+    // initializations for Push-Relabel
+    private double flow;
+    private DirectedEdge reverseEdge;
 
     /**
      * Initializes a directed edge from vertex {@code v} to vertex {@code w} with
@@ -59,6 +62,25 @@ public class DirectedEdge {
     public String toString() {
         return v + "->" + w + " " + String.format("%5.2f", weight);
     }
+
+    // extra methods for Push - Relabel
+
+    public void setReverseEdge(DirectedEdge reverse) {
+        this.reverseEdge = reverse;
+    }
+
+    // getter for residual capacity
+    public double residualCapacity() {
+        return this.weight - this.flow;
+    }
+
+    public void addFlow(double amount) {
+        this.flow += amount;
+        this.reverseEdge.flow -= amount; //update reverse edge
+    }
+    
+    
+    
 
     /**
      * Unit tests the {@code DirectedEdge} data type.

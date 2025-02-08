@@ -184,38 +184,6 @@ public class GabowSCC {
             throw new IllegalArgumentException("vertex " + v + " is not between 0 and " + (V-1));
     }
 
-    // check an tha to xrisimopoihsw sto case 2????????????????
-    public void printSCC(int k){
-        // number of connected components
-        int m = this.count();
-        System.out.println(m + " components");
-
-        // compute list of vertices in each strong component
-        Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
-        for (int i = 0; i < m; i++) {
-            components[i] = new LinkedList<Integer>();
-        }
-        for (int v = 0; v < G.V(); v++) {
-            components[this.id(v)].add(v);
-        }
-
-        double U = G.maxCapacity();
-
-        // print results and filter components based on size range [k, (1+U)*k]
-        System.out.println("Components within size range [" + k + ", " + (int)((1 + U) * k) + "]:");
-        for (int i = 0; i < m; i++) {
-            int size = components[i].size();
-            System.out.println(size);
-            if (size >= k && size <= (1 + U) * k){
-                System.out.print("Component no" + (i+1) + " contains vertices: ");
-                for (int v : components[i]) {
-                    System.out.print(v + " ");
-                }
-                System.out.println(" (Size: " + size + ")");
-            }
-        }
-    }
-
     public Set<Integer> getVerticesInSCC(int i){
         return components.getOrDefault(i, new HashSet<>());
     }

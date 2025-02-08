@@ -1,8 +1,6 @@
 package helpermethods;
 
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Set;
 
 import graphpackage.DirectedEdge;
@@ -12,12 +10,14 @@ public class MinCut{
 
     private EdgeWeightedDigraph G;
     private double lamda;
-    private Set<Integer> sink;
+    private Set<Integer> sink; // initialize sink here so i can get the vertices of sink inside the maxFlowMinCut
+    private int flag;
     
     //constructor
-    public MinCut(EdgeWeightedDigraph G){
+    public MinCut(EdgeWeightedDigraph G, int flag){
         this.G = G;
         this.lamda = Double.POSITIVE_INFINITY;
+        this.flag = flag;
     }
 
     // Iterate over vertices in the graph to find the value of lamda (Lemma 5)
@@ -28,23 +28,21 @@ public class MinCut{
         Set<Integer> sinkOfMinCut = new HashSet<>();
 
         // compute min-cut for root to vertex t
-        for (int t = 0; t < V; t++){
-            
+        for (int t = 0; t < V; t++){    
             if (t != root) {
                 this.sink = new HashSet<>();
                 maxFlowMinCut(G, root, t);
 
                 // Lemma 5 verification
-                if (this.sink.size() == 1){
-                    if (this.lamda < minCutValue){
+                // Check singletons components
+                if (this.sink.size() == 1 && this.lamda < minCutValue){
                         minCutValue = this.lamda;
-                        sinkOfMinCut = new HashSet<>(this.sink);
-                    }
-                }else { //sink size > 1
-                    if (this.lamda < U * this.sink.size()){
-                        minCutValue = this.lamda;
-                        sinkOfMinCut = new HashSet<>(this.sink);
-                    }
+                        continue;
+                }
+                //sink size > 1 & λ < U * k
+                if (this.lamda < U * this.sink.size() && this.lamda < minCutValue){
+                    minCutValue = this.lamda;
+                    sinkOfMinCut = new HashSet<>(this.sink);
                 }
             }
         }
@@ -52,11 +50,10 @@ public class MinCut{
     }
 
     // Iterate over SCCs in the contracted graph to find the value of lamda (Lemma 8)
-    public double rootedConnectivityForSCCs(EdgeWeightedDigraph contractedG){
+    public double rootedConnectivityForSCCs(int root, EdgeWeightedDigraph contractedG, int k2, double U){
         GabowSCC scc = new GabowSCC(contractedG);
-
         double minCutValue = Double.POSITIVE_INFINITY;
-        Set<Integer> sink = new HashSet<>();
+        Set<Integer> sinkOfMinCut = new HashSet<>();
 
         // Iterate over SCCs
         for (int i = 0; i < scc.count(); i++) {
@@ -67,43 +64,63 @@ public class MinCut{
                 continue;
             }
 
-            // Compute λ(r, T) for the SCC by adding the weight of the incoming in T edges
+            // Compute λ(r, T) - edges from root to SCC
             double sccCutValue = 0.0;
-            for (int v : sccVertices){
-                for (DirectedEdge e : contractedG.adj(v)) {
-                    if (!sccVertices.contains(e.from()) && sccVertices.contains(e.to())) {
-                        sccCutValue += e.weight();
-                    }
+            for (DirectedEdge e : contractedG.adj(root)) {
+                if (sccVertices.contains(e.to())) {
+                    sccCutValue += e.weight();
                 }
             }
 
-            // Update minimum cut if SCC cut value is smaller
-            if (sccCutValue < minCutValue) {
+            // Lemma 8 verification & update min cut if SCC cut value is smaller
+            if (sccVertices.size() <= k2 && sccCutValue < k2 * U && sccCutValue < minCutValue) {
                 minCutValue = sccCutValue;
-                sink = new HashSet<>(sccVertices);
+                sinkOfMinCut = new HashSet<>(sccVertices);
             }
         }
 
         System.out.println("Final Minimum r-Cut Value: " + minCutValue);
-        System.out.println("Final Sink Component of minimum cut: " + sink);
+        System.out.println("Final Sink Component of minimum cut: " + sinkOfMinCut);
 
         return minCutValue;
     }
 
     // iterate over sampled vertices in the graph to find the value of lamda (Lemma 7)
-    public double rootedConnectivityForSampledVertices(int root, Set<Integer> sampledVertices){
+    public double rootedConnectivityForSampledVertices(int root, int kLow, int kHigh, Set<Integer> sampledVertices){
         double minCutValue = Double.POSITIVE_INFINITY;
+        Set<Integer> minCutSink = new HashSet<>();
+        double singletonValue = Double.POSITIVE_INFINITY;
+        Set<Integer> singletonSink = new HashSet<>();
+        double sampledValue = Double.POSITIVE_INFINITY;
+        Set<Integer> sampledSink = new HashSet<>();
 
         // compute min-cut for root to sampled vertex t
         for (int t : sampledVertices){
             this.sink = new HashSet<>();
             maxFlowMinCut(G, root, t);
             double currentValue = this.lamda;
-            System.out.println("Target: " + t);
-            System.out.println("Min-Cut Value: " + this.lamda);
-            System.out.println("Sink Component: " + this.sink);
-            System.out.println("");
-            minCutValue = Math.min(currentValue, minCutValue);
+
+            if (this.sink.size() == 1 && currentValue < singletonValue) {
+                singletonValue = currentValue;
+                singletonSink = new HashSet<>(this.sink);
+            }
+
+            // Lemma 7 verification
+            if (this.sink.size() >= kLow && this.sink.size() <= kHigh){
+                if (currentValue < sampledValue){
+                    sampledValue = currentValue;
+                    sampledSink = new HashSet<>(this.sink);
+                }
+            }
+        }
+
+        // compare singleton and sampled vertices min cut value
+        if (singletonValue < sampledValue){
+            minCutValue = singletonValue;
+            minCutSink = new HashSet<>(singletonSink);
+        }else{
+            minCutValue = sampledValue;
+            minCutSink = new HashSet<>(sampledSink);
         }
 
         return minCutValue;
@@ -111,95 +128,27 @@ public class MinCut{
 
     //computes the min cut edges of a digraph from s to t (Ford Fulkerson algorithm)
     private void maxFlowMinCut(EdgeWeightedDigraph G, int s,int t){
-        //create a residual graph using the copy of the original graph
-        EdgeWeightedDigraph residualG = new EdgeWeightedDigraph(G);
-        int V = residualG.V();
-        int[] parent = new int[V];   // array to store path
-        double maxFlow = 0;
-
-        //BFS in residual graph
-        while (bfs(residualG, s, t, parent)) {
-
-            double pathFlow = Double.POSITIVE_INFINITY;
-            for (int to = t; to != s; to = parent[to]){
-                int from = parent[to];
-                pathFlow = Math.min(pathFlow, getResidualCapacity(residualG, from, to));
-            }
-
-            // Update residual capacities
-            for (int to = t; to != s; to = parent[to]){
-                int from = parent[to];
-                updateResidualCapacity(residualG, from, to, -pathFlow);
-                updateResidualCapacity(residualG, to, from, pathFlow);
-            }
-
-            maxFlow += pathFlow;
-        }
-
-        this.lamda = maxFlow;
-
-        boolean[] isReachable = new boolean[V];
-        dfs(residualG, s, isReachable);
-
-        // add unreachable vertices in sink set
-        for (int v = 0; v < residualG.V(); v++){
-            if (!isReachable[v]){
-                this.sink.add(v);
-            }
-        }
-    }
-
-    private void dfs(EdgeWeightedDigraph residualG, int s, boolean[] isReachable) {
-        isReachable[s] = true;
-        for (DirectedEdge e : residualG.adj(s)) {
-            int to = e.to();
-            if (e.weight() > 0 && !isReachable[to]) {
-                dfs(residualG, to, isReachable);
-            }
-        }
-    }
-
-    private void updateResidualCapacity(EdgeWeightedDigraph residualG, int u, int v, double flow) {
-        for (DirectedEdge e : residualG.adj(u)) {
-            if (e.to() == v) {
-                e.setWeight(e.weight() + flow);
-                return;
-            }
-        }
-        // If edge doesn't exist, add a new edge with the flow
-        residualG.addEdge(new DirectedEdge(u, v, flow));
-    }
-
-    private double getResidualCapacity(EdgeWeightedDigraph residualG, int u, int v) {
-        for (DirectedEdge e : residualG.adj(u)) {
-            if (e.to() == v) {
-                return e.weight();
-            }
-        }
-        return 0;
-    }
-
-    private boolean bfs(EdgeWeightedDigraph residualG, int s, int t, int[] parent) {
-        int V = residualG.V();
-        boolean [] visited = new boolean[V];
-        Queue<Integer> queue = new LinkedList<>();
-        queue.add(s);
-        visited[s] = true;
-        parent[s] = -1;
-
-        while (!queue.isEmpty()) {
-            int u = queue.poll();
-
-            for (DirectedEdge e : residualG.adj(u)) {
-                int v = e.to();
-                if (!visited[v] && e.weight() > 0) {
-                    queue.add(v);
-                    parent[v] = u;
-                    visited[v] = true;
+        if (flag == 0) { //Push-Relabel algorithm
+            PushRelabelMaxFlow pr = new PushRelabelMaxFlow(G.V());
+            for (int v = 0; v < G.V(); v++) {
+                for (DirectedEdge e : G.adj(v)) {
+                    pr.addEdge(e.from(), e.to(), e.weight());
                 }
             }
+            this.lamda = pr.maxFlow(s, t);
+            this.sink = pr.getMinCut(s);
+        }else { // Ford-Fulkerson algorithm
+            FordFulkerson ff = new FordFulkerson(G, s, t);
+            this.lamda = ff.getMaxFlow();
+            this.sink = ff.getMinCutSink();
         }
-
-        return visited[t];
     }
+
+    // public static void main(String[] args) {
+    //     In in = new In("sample.txt");
+    //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+    //     MinCut minCut = new MinCut(G, 0);
+    //     minCut.maxFlowMinCut(G, 0, 4);
+    //     System.out.println(lamda); // make lamda static if i want to check it 
+    // }
 }

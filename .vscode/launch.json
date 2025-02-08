@@ -6,6 +6,27 @@
     "configurations": [
         {
             "type": "java",
+            "name": "MinCut",
+            "request": "launch",
+            "mainClass": "helpermethods.MinCut",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
+            "name": "PushRelabelMaxFlow",
+            "request": "launch",
+            "mainClass": "helpermethods.PushRelabelMaxFlow",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
+            "name": "ContractedG",
+            "request": "launch",
+            "mainClass": "helpermethods.ContractedG",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
             "name": "GabowSCC",
             "request": "launch",
             "mainClass": "helpermethods.GabowSCC",
@@ -15,7 +36,6 @@
             "type": "java",
             "name": "Main",
             "request": "launch",
-            // "args": "tinyEWD.txt",
             "mainClass": "mainpackage.Main",
             "projectName": "Rooted_Connectivity_V2_5c83a69"
         },

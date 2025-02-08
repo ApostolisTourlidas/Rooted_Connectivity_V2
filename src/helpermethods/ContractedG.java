@@ -4,15 +4,15 @@ import graphpackage.EdgeWeightedDigraph;
 import graphpackage.DirectedEdge;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 public class ContractedG {
 
     private EdgeWeightedDigraph G;
-    private Set<Integer> contractedVertices = new HashSet<>();
+    private Set<Integer> highInDegree = new HashSet<>();
     
     //constructor
     public ContractedG(EdgeWeightedDigraph G){
@@ -20,14 +20,13 @@ public class ContractedG {
     }
     
     // Rooted Sparsification Lemma Implementation
-    public EdgeWeightedDigraph computeContractedG(int r, double U, int k){
+    public EdgeWeightedDigraph computeContractedG(int r, double U, int k2){
         EdgeWeightedDigraph contractedG = new EdgeWeightedDigraph(G.V()); // Create contracted graph without edges
         int V = G.V();
-        List<Integer> highInDegree = new ArrayList<>();
 
         // vertices with weighted in-degree >= (1+U)*k
         for (int v = 0; v < V; v++){
-            if (v != r && G.weightedInDegree[v] >= (1 + U) * k){
+            if (v != r && G.weightedInDegree[v] >= (1 + U) * k2){
                 highInDegree.add(v);
             }
         }
@@ -50,20 +49,17 @@ public class ContractedG {
 
                 if (highInDegree.contains(from)){
                     from = r;
-                    contractedVertices.add(from);
                 }
                 if (highInDegree.contains(to)){
                     to = r;
-                    contractedVertices.add(to);
                 }
-                DirectedEdge tempEdge = new DirectedEdge(from, to, weight);
-                contractedG.addEdge(tempEdge);
+                // avoid self loops
+                if (from != to) {
+                    DirectedEdge tempEdge = new DirectedEdge(from, to, weight);
+                    contractedG.addEdge(tempEdge);
+                    tempEdges[from].add(tempEdge);
+                }
             }
-        }
-        for (int v = 0; v < V; v++){
-            for (DirectedEdge e : contractedG.adj(v)){
-                tempEdges[v].add(e);
-            } 
         }
 
         // If i want to check the temp's list elements before removing duplicates
@@ -92,6 +88,7 @@ public class ContractedG {
                 }
             }
         }
+
         // If i want to check the temp's list elements after removing duplicates
         System.out.println("Meta to remove");
         for (int v = 0; v < V; v++){
@@ -110,17 +107,34 @@ public class ContractedG {
         return contractedG;
     }
 
-    public Set<Integer> sampleVertexGenerator(int root, double sinkSize, EdgeWeightedDigraph contractedG){
-        Random rand = new Random();
-        Set<Integer> sampledVertices = new HashSet<>();
-        
-        while (sampledVertices.size() < sinkSize){ // while sampled vertices are smaller then n / k1 according to lemma's 7 proof
-            int v = rand.nextInt(contractedG.V());
-            if (v != root && !contractedVertices.contains(v)){ // condition for avoiding v is in root or contracted vertices
-                sampledVertices.add(v);
+    public Set<Integer> sampleVertexGenerator(int root, int sinkSize, EdgeWeightedDigraph contractedG){
+        List<Integer> nonContractedVertices = new ArrayList<>();
+
+        // store non contracted vertices
+        for (int v = 0; v < contractedG.V(); v++) {
+            if (v != root && !highInDegree.contains(v)) {
+                nonContractedVertices.add(v);
             }
         }
-        
-        return sampledVertices;
+        // check that non contracted vertices are enough for sampling
+        if (nonContractedVertices.size() < sinkSize) {
+            System.out.println("Warning: Not enough available vertices to sample.");
+            return new HashSet<>(nonContractedVertices); // Return all non contracted vertices instead
+        }
+        // Shuffle and select random samples
+        Collections.shuffle(nonContractedVertices);
+        return new HashSet<>(nonContractedVertices.subList(0, (int) sinkSize));
     }
+
+    // public static void main(String[] args) {
+    //     In in = new In("testContraction.txt");
+    //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+    //     int root = 0;
+    //     int k2 = 2;
+
+    //     ContractedG cg = new ContractedG(G);
+    //     EdgeWeightedDigraph contractedG = cg.computeContractedG(root, G.maxCapacity(), k2);
+    // }
 }
+
+
