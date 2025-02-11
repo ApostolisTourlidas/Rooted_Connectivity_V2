@@ -3,16 +3,19 @@ package helpermethods;
 import java.util.*;
 
 import graphpackage.DirectedEdge;
+import graphpackage.EdgeWeightedDigraph;
 
 public class PushRelabelMaxFlow {
     private int V;
     private Bag<DirectedEdge>[] adj;
     private double[] excess;
     private int[] height;
+    private EdgeWeightedDigraph G;
     Queue<Integer> activeNodes = new LinkedList<>();
 
-    public PushRelabelMaxFlow(int V) {
-        this.V = V;
+    public PushRelabelMaxFlow(EdgeWeightedDigraph G) {
+        this.G = G;
+        this.V = G.V();
         adj = (Bag<DirectedEdge>[]) new Bag[V];
         for (int v = 0; v < V; v++){
             adj[v] = new Bag<DirectedEdge>();
@@ -99,15 +102,17 @@ public class PushRelabelMaxFlow {
     }
 
     public Set<Integer> getMinCut(int s) {
-        Set<Integer> minCut = new HashSet<>();
-        Queue<Integer> queue = new LinkedList<>();
-        boolean[] visited = new boolean[V];
-        queue.add(s);
-        visited[s] = true;
+        Set<Integer> reachable = new HashSet<>();
+        Set<Integer> minCutSink = new HashSet<>();
+        Queue<Integer> queue = new LinkedList<>(); //ok
+        boolean[] visited = new boolean[V]; //ok
+        queue.add(s); //ok
+        visited[s] = true; //ok
 
         while (!queue.isEmpty()) {
             int u = queue.poll();
-            minCut.add(u);
+            reachable.add(u);
+            
             for (DirectedEdge e : adj[u]) {
                 if (e.residualCapacity() > 0 && !visited[e.to()]) {
                     visited[e.to()] = true;
@@ -115,6 +120,14 @@ public class PushRelabelMaxFlow {
                 }
             }
         }
-        return minCut;
+
+        for (int v = 0; v < V; v++) {
+            if (!reachable.contains(v) && !G.contractedVertices.contains(v)) {
+                minCutSink.add(v);
+            }
+        }
+            
+        System.out.println("Eimai mesa stin getMinCut - prin to return: " + minCutSink);
+        return minCutSink;
     }
 }

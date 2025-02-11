@@ -21,6 +21,9 @@ public class FordFulkerson {
         this.maxFlow = 0;
         this. minCutSink = new HashSet<>();
 
+        // Debugging Print
+        System.out.println("[DEBUG] Running Ford-Fulkerson from " + s + " to " + t);
+
         //BFS in residual graph
         while (bfs( s, t, parent)) {
 
@@ -45,10 +48,12 @@ public class FordFulkerson {
 
         // add unreachable vertices in sink set
         for (int v = 0; v < residualG.V(); v++){
-            if (!isReachable[v]){
+            if (!isReachable[v] && !G.contractedVertices.contains(v)){
                 minCutSink.add(v);
             }
         }
+
+        System.out.println("[DEBUG] Max Flow: " + maxFlow + " | Min-Cut Sink: " + minCutSink);
 
     }
 

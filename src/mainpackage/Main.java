@@ -1,4 +1,5 @@
 package mainpackage;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -15,11 +16,15 @@ public class Main {
      */
     public static void main(String[] args) {
         // load graph from file
-        In in = new In("tinySCC.txt");
+        In in = new In("1. n=8 - m=23.txt");
         EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
         int root, k1, k2;
         
-        // int k = (int) Math.sqrt(G.V());  // isws na to valoume riza n tha doume         
+        // int k = (int) Math.sqrt(G.V());  // isws na to valoume riza n tha doume
+        System.out.println("Max capacity: " + G.maxCapacity());
+        for (int i = 0; i < G.V(); i++) {
+            System.out.println("Vertex " + i + " has indegree edges: " + G.indegree(i) + " with weighted indegree: " + G.weightedInDegree[i]);
+        }
 
         // User's input and validation for root and k
         Scanner input = new Scanner(System.in);
@@ -58,19 +63,22 @@ public class Main {
     }
 
     private static double Theorem1(EdgeWeightedDigraph G, int root, int k1, int k2) {
-        int usePushRelabel = 0; // 0 for Push-Relabel - 1 for Ford-Fulkerson
         double U = G.maxCapacity();
         int sinkSize = (int) G.V() / k1;
+
         ContractedG cg = new ContractedG(G);
-        EdgeWeightedDigraph contractedG = cg.computeContractedG(root, U, k2);
-        MinCut minCut = new MinCut(contractedG, usePushRelabel);
+        EdgeWeightedDigraph contractedG = cg.computeContractedG(root, U, k2);        
+
+        MinCut minCut = new MinCut(contractedG, MinCut.PUSH_RELABEL);
         double singletonMinCutValue, smallSinkMinCutValue, sampledMinCutValue;
         
         // min cut for singletons - Lemma 5
-        singletonMinCutValue = minCut.rootedConnectivity(root);  
+        Map<String, Object> singleton = minCut.rootedConnectivity(root);
+        singletonMinCutValue = (double) singleton.get("lamda");  
 
         // min cut for small sink components - at most l vertices - Lemma 8
-        smallSinkMinCutValue = minCut.rootedConnectivityForSCCs(root, contractedG, k2, U);
+        Map<String, Object> smallSink = minCut.rootedConnectivityForSCCs(root, k2, U);
+        smallSinkMinCutValue = (double) smallSink.get("lamda");
 
         // Skip Lemma 7 in case i have found the minimum cut which is 1
         if (singletonMinCutValue == 1 || smallSinkMinCutValue == 1) { 
@@ -90,12 +98,16 @@ public class Main {
                 int kLow = (int) Math.pow(2, i);
                 int kHigh = (int) Math.pow(2, i+1);
                 Set<Integer> sampledVertices = cg.sampleVertexGenerator(root, sinkSize, contractedG);
-                double currentValue = minCut.rootedConnectivityForSampledVertices(root, kLow, kHigh, sampledVertices);
+                Map<String, Object> sampledSink = minCut.rootedConnectivityForSampledVertices(root, kLow, kHigh, sampledVertices);
+                double currentValue = (double) sampledSink.get("lamda");
                 sampledMinCutValue = Math.min(sampledMinCutValue, currentValue);
             }
         }
+        System.out.println(sampledMinCutValue);
+        double result = Math.min(singletonMinCutValue, Math.min(smallSinkMinCutValue, sampledMinCutValue));
+        System.out.println(result);
 
         // return the smallest min cut
-        return Math.min(singletonMinCutValue, Math.min(smallSinkMinCutValue, sampledMinCutValue));
+        return result;
     }
 }

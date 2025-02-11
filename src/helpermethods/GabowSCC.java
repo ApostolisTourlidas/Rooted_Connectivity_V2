@@ -201,7 +201,7 @@ public class GabowSCC {
     }
     
     // public static void main(String[] args) {
-    //     In in = new In("tinySCC.txt");    
+    //     In in = new In("n=6 - m=15 - contracted.txt");    
     //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
     //     GabowSCC scc = new GabowSCC(G);
     //     scc.printAllSCCs();
@@ -225,6 +225,11 @@ public class GabowSCC {
     //             System.out.print(v + " ");
     //         }
     //         System.out.println();
+    //     }
+
+    //     for (int i = 0; i < scc.count(); i++) {
+    //         Set<Integer> sccVertices = scc.getVerticesInSCC(i);
+    //         System.out.println("To SCC " + i + " periexei autous tous komvous: " + sccVertices);
     //     }
 
     // }

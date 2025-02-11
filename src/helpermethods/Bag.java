@@ -1,7 +1,6 @@
 package helpermethods;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Scanner;
 
 /**
  *  The {@code Bag} class represents a bag (or multiset) of

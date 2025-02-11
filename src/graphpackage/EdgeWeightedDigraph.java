@@ -1,5 +1,7 @@
 package graphpackage;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.Stack;
 
 import helpermethods.Bag;
@@ -43,7 +45,8 @@ public class EdgeWeightedDigraph {
     private int E;                      // number of edges in this digraph
     public Bag<DirectedEdge>[] adj;    // adj[v] = adjacency list for vertex v
     private int[] indegree;             // indegree[v] = indegree of vertex v
-    public double[] weightedInDegree;  // weightedInDegree[v] = total weight of incoming edges of vertex v 
+    public double[] weightedInDegree;  // weightedInDegree[v] = total weight of incoming edges of vertex v
+    public Set<Integer> contractedVertices;  // store here the vertices that get contracted to root and handle them in the methods
 
     /**
      * Initializes an empty edge-weighted digraph with {@code V} vertices and 0 edges.
@@ -58,6 +61,7 @@ public class EdgeWeightedDigraph {
         this.E = 0;
         this.indegree = new int[V];
         this.weightedInDegree = new double[V];
+        contractedVertices = new HashSet<>();
         adj = (Bag<DirectedEdge>[]) new Bag[V];
         for (int v = 0; v < V; v++){
             adj[v] = new Bag<DirectedEdge>();
@@ -114,8 +118,8 @@ public class EdgeWeightedDigraph {
             int E = in.readInt();
             if (E < 0) throw new IllegalArgumentException("Number of edges must be non-negative");
             for (int i = 0; i < E; i++) {
-                int v = in.readInt();
-                int w = in.readInt();
+                int v = in.readInt(); // reduce vertices to become 0-based 
+                int w = in.readInt(); // reduce vertices to become 0-based
                 validateVertex(v);
                 validateVertex(w);
                 double weight = in.readDouble();
