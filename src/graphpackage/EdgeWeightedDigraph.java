@@ -122,6 +122,7 @@ public class EdgeWeightedDigraph {
                 int w = in.readInt(); // reduce vertices to become 0-based
                 validateVertex(v);
                 validateVertex(w);
+                // double weight = Math.round(in.readDouble() * 100);
                 double weight = in.readDouble();
                 addEdge(new DirectedEdge(v, w, weight));
             }

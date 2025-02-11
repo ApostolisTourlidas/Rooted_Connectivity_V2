@@ -1,3 +1,4 @@
+// bfs investigation
 package helpermethods;
 
 import java.util.HashSet;
@@ -48,7 +49,7 @@ public class FordFulkerson {
 
         // add unreachable vertices in sink set
         for (int v = 0; v < residualG.V(); v++){
-            if (!isReachable[v] ){
+            if (!isReachable[v] && !G.contractedVertices.contains(v)){
                 minCutSink.add(v);
             }
         }
@@ -118,29 +119,6 @@ public class FordFulkerson {
     public Set<Integer> getMinCutSink() {
         return minCutSink;
     }
+    
 
-    public static void main(String[] args) {
-        In in = new In("1. n=8 - m=25.txt");
-        EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
-        int root = 0; // Θέτουμε το root κόμβο
-        double lamda = Double.POSITIVE_INFINITY;
-        Set<Integer> sink = new HashSet<>();
-        
-        long startTime = System.nanoTime();
-        for (int v = 0; v < G.V(); v++) {
-            if (v != root) {
-                FordFulkerson ff = new FordFulkerson(G, root, v);
-                double currentValue = ff.getMaxFlow();
-                Set<Integer> currentSink = ff.getMinCutSink();
-
-                if (currentValue < lamda) {
-                    lamda = currentValue;
-                    sink = currentSink;
-                }
-            }
-        }
-        long endTime = System.nanoTime();
-        System.out.println("Minimum Cut from " + root + ": " + lamda + " and execution time is: " + (endTime-startTime) / 1e6 + "ms");
-        System.out.println("Vertices in sink component: " + sink);
-    }
 }

@@ -9,16 +9,12 @@ import graphpackage.DirectedEdge;
 import graphpackage.EdgeWeightedDigraph;
 
 public class MinCut{
-    public static final int PUSH_RELABEL = 0;
-    public static final int FORD_FULKERSON = 1;
 
     private EdgeWeightedDigraph G;
-    private int algorithm;
-    
+
     //constructor
-    public MinCut(EdgeWeightedDigraph G, int algorithm){
+    public MinCut(EdgeWeightedDigraph G){
         this.G = G;  // this.G will be the contracted G for Theorem 1 as this one i use to my methods
-        this.algorithm = algorithm;
     }
 
     // Iterate over vertices in the graph to find the value of lamda (Lemma 5)
@@ -54,7 +50,7 @@ public class MinCut{
         finalResult.put("lamda", minCutValue);
         finalResult.put("sink", sinkOfMinCut);
 
-        System.out.println("Rooted Connectivity (Lemma 5) with min cut value: " + minCutValue + "\n");
+        System.out.println("Rooted Connectivity (Lemma 5) with min cut value: " + minCutValue + " and the sink component is: " + sinkOfMinCut + "\n");
         return finalResult;
     }
 
@@ -71,11 +67,11 @@ public class MinCut{
         // Iterate over SCCs
         for (int i = 0; i < scc.count(); i++) {
             Set<Integer> sccVertices = scc.getVerticesInSCC(i);
-            System.out.println("[DEBUG] SCC " + i + " has " + sccVertices.size() + " vertices: " + sccVertices);
+            // System.out.println("[DEBUG] SCC " + i + " has " + sccVertices.size() + " vertices: " + sccVertices);
 
             // Skip singleton SCCs || skip SCC that contains contracted vertices
             if (sccVertices.size() <= 1 || sccVertices.contains(root) ||G.contractedVertices.containsAll(sccVertices)) {
-                System.out.println("[DEBUG] Skipping SCC " + i + " because it's invalid.");
+                // System.out.println("[DEBUG] Skipping SCC " + i + " because it's invalid.");
                 continue;
             }
 
@@ -154,42 +150,19 @@ public class MinCut{
                 finalResult.put("sink", sink);
             }
         }
-        
-        Set<Integer> finalSink = (Set<Integer>) finalResult.get("sink");
-        System.out.println("[DEBUG] Edges contributing to min-cut:");
-        for (DirectedEdge e : G.adj(root)) {
-            if (finalSink.contains(e.to())) {
-                System.out.println("  Edge: " + e.from() + " -> " + e.to() + " | Weight: " + e.weight());
-            }
-        }
 
         System.out.println("Final Minimum r-Cut Value (Lemma 7): " + finalResult.get("lamda") + "and sink component is: " + finalResult.get("sink"));
         return finalResult;
     }
 
     //computes the min cut edges of a digraph from s to t (Ford Fulkerson algorithm)
-    public Map<String,Object> maxFlowMinCut(EdgeWeightedDigraph G, int s,int t){
-        System.out.println("\n[DEBUG] Running maxFlowMinCut() from " + s + " to " + t + 
-        " using " + (algorithm == PUSH_RELABEL ? "Push-Relabel" : "Ford-Fulkerson"));
-        
-        double lamda;
-        Set<Integer> sink = new HashSet<>();
-        if (algorithm == PUSH_RELABEL) { //Push-Relabel algorithm
-            PushRelabelMaxFlow pr = new PushRelabelMaxFlow(G);
-            for (DirectedEdge e : G.edges()) {
-                pr.addEdge(e.from(), e.to(), e.weight());
-            }
-            
-            lamda = pr.maxFlow(s, t);
-            sink = pr.getMinCut(s);
-        }else { // Ford-Fulkerson algorithm
-            FordFulkerson ff = new FordFulkerson(G, s, t);
-            lamda = ff.getMaxFlow();
-            sink = ff.getMinCutSink();
-        }
-
-        System.out.println("[DEBUG] Computed min-cut lamda: " + lamda + " | Sink: " + sink);
+    public Map<String,Object> maxFlowMinCut(EdgeWeightedDigraph G, int s,int t){        
         Map<String,Object> result = new HashMap<>();
+        FordFulkerson ff = new FordFulkerson(G, s, t);
+        double lamda = ff.getMaxFlow();
+        Set<Integer> sink = ff.getMinCutSink();
+        
+        // System.out.println("[DEBUG] Computed min-cut lamda: " + lamda + " | Sink: " + sink);
         result.put("lamda", lamda);
         result.put("sink", sink);
         return result;

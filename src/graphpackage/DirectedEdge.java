@@ -24,6 +24,7 @@ public class DirectedEdge {
         this.v = v;
         this.w = w;
         this.weight = weight;
+        this.flow = 0;
     }
 
     /**
@@ -66,19 +67,26 @@ public class DirectedEdge {
     // extra methods for Push - Relabel
 
     public void setReverseEdge(DirectedEdge reverse) {
-        this.reverseEdge = reverse;
+        reverseEdge = reverse;
     }
 
     // getter for residual capacity
     public double residualCapacity() {
-        return this.weight - this.flow;
+        return weight - flow;
     }
 
     public void addFlow(double amount) {
-        this.flow += amount;
-        this.reverseEdge.flow -= amount; //update reverse edge
+        flow += amount;
+        getReverseEdge().flow -= amount; //update reverse edge
     }
     
+    public DirectedEdge getReverseEdge() {
+        return reverseEdge;
+    }
+
+    public double getFlow() {
+        return flow;
+    }
     
     
 

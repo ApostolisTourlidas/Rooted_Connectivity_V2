@@ -3,10 +3,13 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import graphpackage.DirectedEdge;
 import graphpackage.EdgeWeightedDigraph;
 import helpermethods.ContractedG;
 import helpermethods.In;
 import helpermethods.MinCut;
+import helpermethods.MinCutBruteForce;
+import helpermethods.MinCutResultBruteForce;
 
 public class Main {
     /**
@@ -16,15 +19,26 @@ public class Main {
      */
     public static void main(String[] args) {
         // load graph from file
-        In in = new In("1. n=8 - m=23.txt");
+        In in = new In("1. n=8 - m=25.txt");
         EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+        boolean bruteForce = false;
+        long startTime;
+        long endTime;
         int root, k1, k2;
+
+        int minRoot = 0;
+        int minInDegree = Integer.MAX_VALUE;
         
         // int k = (int) Math.sqrt(G.V());  // isws na to valoume riza n tha doume
         System.out.println("Max capacity: " + G.maxCapacity());
         for (int i = 0; i < G.V(); i++) {
             System.out.println("Vertex " + i + " has indegree edges: " + G.indegree(i) + " with weighted indegree: " + G.weightedInDegree[i]);
+            if (G.indegree(i) < minInDegree) {
+                minInDegree = G.indegree(i);
+                minRoot = i;
+            }
         }
+        System.out.println("Best min root: " + minRoot + " with in degree value: " + minInDegree);
 
         // User's input and validation for root and k
         Scanner input = new Scanner(System.in);
@@ -52,11 +66,24 @@ public class Main {
             System.out.println("k2 must be between " + k1 + " and " + G.V() + ". Enter k2 again: ");
             k2 = input.nextInt();
         }
-        input.close(); 
+        input.close();
 
-        long startTime = System.nanoTime();
+        // Brute Force
+        if (bruteForce) {
+            startTime = System.nanoTime();
+            MinCutBruteForce minCutFinder = new MinCutBruteForce(G, root);
+            MinCutResultBruteForce result = minCutFinder.findMinCut();
+            endTime = System.nanoTime();
+            System.out.println("Minimum Cut from " + root + ": " + result.getMinCutValue() + " and execution time is: " + (endTime-startTime) / 1e6 + "ms");
+            System.out.println("Edges in the Minimum Cut:");
+            for (DirectedEdge edge : result.getMinCutEdges()) {
+                System.out.println(edge);
+            }
+        }
+
+        startTime = System.nanoTime();
         double edgeConnectivity = Theorem1(G, root, k1, k2);
-        long endTime = System.nanoTime();
+        endTime = System.nanoTime();
 
         System.out.println("The minimal r-cut value is: " + edgeConnectivity);
         System.out.println("Execution time: %.3f ms\n"  + (endTime - startTime) / 1e6);
@@ -69,7 +96,7 @@ public class Main {
         ContractedG cg = new ContractedG(G);
         EdgeWeightedDigraph contractedG = cg.computeContractedG(root, U, k2);        
 
-        MinCut minCut = new MinCut(contractedG, MinCut.PUSH_RELABEL);
+        MinCut minCut = new MinCut(contractedG);
         double singletonMinCutValue, smallSinkMinCutValue, sampledMinCutValue;
         
         // min cut for singletons - Lemma 5
