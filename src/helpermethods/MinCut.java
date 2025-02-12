@@ -24,12 +24,12 @@ public class MinCut{
         double minCutValue = Double.POSITIVE_INFINITY;
         double U = G.maxCapacity();
         Set<Integer> sinkOfMinCut = new HashSet<>();
-        FordFulkerson ff = new FordFulkerson(G, root);
+        FordFulkerson ff = new FordFulkerson(this.G, root);
         
         // compute min-cut for root to vertex t
         for (int t = 0; t < V; t++){    
             if (t != root && !G.contractedVertices.contains(t)) {
-                ff.computeMinCut(t);
+                ff.computeMaxFlow(t);
                 double lamda = ff.getMaxFlow(t);
                 Set<Integer> sink = ff.getMinCutSink(t);
 
@@ -65,6 +65,15 @@ public class MinCut{
         Set<Integer> smallestAvailableSCC = new HashSet<>();
         int minSCCSize = Integer.MAX_VALUE;
 
+        Set<Integer> rootComponent = new HashSet<>();
+
+        for (int i = 0; i < scc.count(); i++) {
+            Set<Integer> sccVertices = scc.getVerticesInSCC(i);
+            if (sccVertices.contains(root)) {
+                rootComponent = sccVertices;
+            }
+        }
+
         // Iterate over SCCs
         for (int i = 0; i < scc.count(); i++) {
             Set<Integer> sccVertices = scc.getVerticesInSCC(i);
@@ -78,11 +87,14 @@ public class MinCut{
 
             // Compute λ(r, T) - edges from root to SCC
             double sccCutValue = 0.0;
-            for (DirectedEdge e : G.adj(root)) {
-                if (sccVertices.contains(e.to())) {
-                    sccCutValue += e.weight();
-                }
-            }  
+            for (Integer element : rootComponent) {
+                for (DirectedEdge e : G.adj(element)) {
+                    if (sccVertices.contains(e.to())) {
+                        sccCutValue += e.weight();
+                    }
+                }  
+            }
+            
             System.out.println("[DEBUG] SCC with id " + i + " | Size: " + sccVertices.size() + " | Cut Value: " + sccCutValue);
 
             // Lemma 8 verification & update min cut if SCC cut value is smaller
@@ -126,7 +138,7 @@ public class MinCut{
 
         // compute min-cut for root to sampled vertex t
         for (int t : sampledVertices){
-            ff.computeMinCut(t);
+            ff.computeMaxFlow(t);
             double lamda = ff.getMaxFlow(t);
             Set<Integer> sink = ff.getMinCutSink(t);
 

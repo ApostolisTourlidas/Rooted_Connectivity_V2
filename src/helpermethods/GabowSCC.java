@@ -201,7 +201,7 @@ public class GabowSCC {
     }
     
     // public static void main(String[] args) {
-    //     In in = new In("n=6 - m=15 - contracted.txt");    
+    //     In in = new In("1. n=8 - m=25.txt");    
     //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
     //     GabowSCC scc = new GabowSCC(G);
     //     scc.printAllSCCs();

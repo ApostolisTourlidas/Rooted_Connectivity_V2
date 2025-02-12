@@ -19,9 +19,10 @@ public class FordFulkerson {
         this.maxFlowMap = new HashMap<>();
         this.minCutMap = new HashMap<>();
         this.root = root;
+        residualG.contractedVertices = G.contractedVertices;
     }
 
-    public void computeMinCut(int t) {
+    public void computeMaxFlow(int t) {
         int V = residualG.V();
         int[] parent = new int[V];
             
@@ -44,7 +45,10 @@ public class FordFulkerson {
         }
         
         maxFlowMap.put(t, maxFlow);
-        minCutMap.put(t, computeMinCut(tempGraph, root));
+        
+        Set<Integer> minCutSet = computeMinCut(tempGraph, root);
+        minCutSet.removeAll(residualG.contractedVertices);
+        minCutMap.put(t, minCutSet);
     }
 
     private boolean bfs(EdgeWeightedDigraph graph, int s, int t, int[] parent) {
@@ -120,27 +124,27 @@ public class FordFulkerson {
     }
 
  
-    public static void main(String[] args) {
-        In in = new In("1. n=8 - m=25.txt");
-        EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
-        int root = 0; // Θέτουμε το root κόμβο
-        double lamda = Double.POSITIVE_INFINITY;
-        Set<Integer> sink = new HashSet<>();
-        FordFulkerson ff = new FordFulkerson(G, root);
+    // public static void main(String[] args) {
+    //     In in = new In("1. n=8 - m=25.txt");
+    //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+    //     int root = 0; // Θέτουμε το root κόμβο
+    //     double lamda = Double.POSITIVE_INFINITY;
+    //     Set<Integer> sink = new HashSet<>();
+    //     FordFulkerson ff = new FordFulkerson(G, root);
         
-        long startTime = System.nanoTime();
-        for (int v = 0; v < G.V(); v++) {
-            if (v != root) {
-                ff.computeMinCut(v);
-                double currentValue = ff.getMaxFlow(v);
-                if (currentValue <= lamda) {
-                    lamda = currentValue;
-                    sink = ff.getMinCutSink(v);
-                }
-            }
-        }
-        long endTime = System.nanoTime();
-        System.out.println("Minimum Cut: " + lamda + " || Execution time is: " + (endTime-startTime) / 1e6 + "ms");
-        System.out.println("Vertices in sink component: " + sink);
-    }
+    //     long startTime = System.nanoTime();
+    //     for (int v = 0; v < G.V(); v++) {
+    //         if (v != root) {
+    //             ff.computeMaxFlow(v);
+    //             double currentValue = ff.getMaxFlow(v);
+    //             if (currentValue <= lamda) {
+    //                 lamda = currentValue;
+    //                 sink = ff.getMinCutSink(v);
+    //             }
+    //         }
+    //     }
+    //     long endTime = System.nanoTime();
+    //     System.out.println("Minimum Cut: " + lamda + " || Execution time is: " + (endTime-startTime) / 1e6 + "ms");
+    //     System.out.println("Vertices in sink component: " + sink);
+    // }
 }
