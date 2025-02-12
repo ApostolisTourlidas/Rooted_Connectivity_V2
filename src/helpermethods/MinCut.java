@@ -24,13 +24,14 @@ public class MinCut{
         double minCutValue = Double.POSITIVE_INFINITY;
         double U = G.maxCapacity();
         Set<Integer> sinkOfMinCut = new HashSet<>();
+        FordFulkerson ff = new FordFulkerson(G, root);
         
         // compute min-cut for root to vertex t
         for (int t = 0; t < V; t++){    
             if (t != root && !G.contractedVertices.contains(t)) {
-                Map<String, Object> result = maxFlowMinCut(G, root, t);
-                double lamda = (double) result.get("lamda");
-                Set<Integer> sink = (Set<Integer>) result.get("sink");
+                ff.computeMinCut(t);
+                double lamda = ff.getMaxFlow(t);
+                Set<Integer> sink = ff.getMinCutSink(t);
 
                 // Lemma 5 verification
                 // Check singletons components
@@ -101,18 +102,7 @@ public class MinCut{
         if (sinkOfMinCut.isEmpty() && !smallestAvailableSCC.isEmpty()) {
             System.out.println("[WARNING] No valid SCC found with k2! Using the smallest available SCC.");
             sinkOfMinCut = smallestAvailableSCC;
-
-            minCutValue = 0.0;
-            for (DirectedEdge e : G.adj(root)) {
-                if (sinkOfMinCut.contains(e.to())) {
-                    minCutValue += e.weight();
-                }
-            }
-
-        }
-        if (sinkOfMinCut.isEmpty()) {
-            System.out.println("[WARNING] No valid SCC available.");
-            return Map.of("lamda", Double.POSITIVE_INFINITY, "sink", Set.of());
+            minCutValue = minSCCSize;
         }
 
         Map<String, Object> finalResult = new HashMap<>();
@@ -128,15 +118,17 @@ public class MinCut{
     // iterate over sampled vertices in the graph to find the value of lamda (Lemma 7)
     public Map<String, Object> rootedConnectivityForSampledVertices(int root, int kLow, int kHigh, Set<Integer> sampledVertices){
         System.out.println("\n---------- Running Lemma 7 ----------");
+        FordFulkerson ff = new FordFulkerson(G, root);
+        
         Map<String, Object> finalResult = new HashMap<>();
         finalResult.put("lamda", Double.POSITIVE_INFINITY);
         finalResult.put("sink", new HashSet<Integer>());
 
         // compute min-cut for root to sampled vertex t
         for (int t : sampledVertices){
-            Map<String, Object> result = maxFlowMinCut(G, root, t);
-            double lamda = (double) result.get("lamda");
-            Set<Integer> sink = (Set<Integer>) result.get("sink");
+            ff.computeMinCut(t);
+            double lamda = ff.getMaxFlow(t);
+            Set<Integer> sink = ff.getMinCutSink(t);
 
             if (sink.size() == 1 && lamda < (double) finalResult.get("lamda") && lamda >0) {
                 finalResult.put("lamda", lamda);
@@ -153,19 +145,6 @@ public class MinCut{
 
         System.out.println("Final Minimum r-Cut Value (Lemma 7): " + finalResult.get("lamda") + "and sink component is: " + finalResult.get("sink"));
         return finalResult;
-    }
-
-    //computes the min cut edges of a digraph from s to t (Ford Fulkerson algorithm)
-    public Map<String,Object> maxFlowMinCut(EdgeWeightedDigraph G, int s,int t){        
-        Map<String,Object> result = new HashMap<>();
-        FordFulkerson ff = new FordFulkerson(G, s, t);
-        double lamda = ff.getMaxFlow();
-        Set<Integer> sink = ff.getMinCutSink();
-        
-        // System.out.println("[DEBUG] Computed min-cut lamda: " + lamda + " | Sink: " + sink);
-        result.put("lamda", lamda);
-        result.put("sink", sink);
-        return result;
     }
 
     // public static void main(String[] args) {
