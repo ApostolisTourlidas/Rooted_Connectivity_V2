@@ -71,7 +71,7 @@ public class ContractedG {
         
 
         // If i want to check the temp's list elements after removing duplicates
-        System.out.println("Meta to remove");
+        System.out.println("Contracted G graph:");
         for (int v = 0; v < V; v++){
             System.out.print(v + ": ");
             for (DirectedEdge e2 : contractedG.adj[v]){

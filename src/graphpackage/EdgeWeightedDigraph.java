@@ -118,8 +118,8 @@ public class EdgeWeightedDigraph {
             int E = in.readInt();
             if (E < 0) throw new IllegalArgumentException("Number of edges must be non-negative");
             for (int i = 0; i < E; i++) {
-                int v = in.readInt(); // reduce vertices to become 0-based 
-                int w = in.readInt(); // reduce vertices to become 0-based
+                int v = in.readInt(); // reduce vertices (-1) to become 0-based 
+                int w = in.readInt(); // reduce vertices (-1) to become 0-based
                 validateVertex(v);
                 validateVertex(w);
                 // double weight = Math.round(in.readDouble() * 100);

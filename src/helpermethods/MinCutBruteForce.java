@@ -145,7 +145,7 @@ public class MinCutBruteForce {
     } 
 
     public static void main(String[] args) {
-        In in = new In("1. n=8 - m=25.txt");
+        In in = new In("4. n=84 - m=124.txt");
         EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
         int root = 0; // Θέτουμε το root κόμβο
         

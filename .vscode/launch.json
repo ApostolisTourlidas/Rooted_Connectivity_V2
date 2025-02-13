@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "In",
+            "request": "launch",
+            "mainClass": "helpermethods.In",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
+            "name": "MaxFlowMinCutBruteForce",
+            "request": "launch",
+            "mainClass": "helpermethods.MaxFlowMinCutBruteForce",
+            "projectName": "Rooted_Connectivity_V2_5c83a69"
+        },
+        {
+            "type": "java",
             "name": "FordFulkerson",
             "request": "launch",
             "mainClass": "helpermethods.FordFulkerson",

@@ -1,4 +1,5 @@
 package mainpackage;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -82,59 +83,84 @@ public class Main {
         }
 
         startTime = System.nanoTime();
-        double edgeConnectivity = Theorem1(G, root, k1, k2);
+        Map<String, Object> edgeConnectivity = Theorem1(G, root, k1, k2);
         endTime = System.nanoTime();
 
-        System.out.println("The minimal r-cut value is: " + edgeConnectivity);
-        System.out.println("Execution time: %.3f ms\n"  + (endTime - startTime) / 1e6);
+        System.out.println("The minimal r-cut value after Theorem 1 execution is: " + edgeConnectivity.get("lamda") + " and sink component: " + edgeConnectivity.get("sink"));
+        System.out.println("Execution time of Theorem 1: %.3f "  + (endTime - startTime) / 1e6 + "ms");
     }
 
-    private static double Theorem1(EdgeWeightedDigraph G, int root, int k1, int k2) {
+    private static Map<String, Object> Theorem1(EdgeWeightedDigraph G, int root, int k1, int k2) {
         double U = G.maxCapacity();
         int sinkSize = (int) G.V() / k1;
 
+        // timer for methods
+        long startTime;
+        long endTime;
+
+        // contraction of original grapg G
         ContractedG cg = new ContractedG(G);
         EdgeWeightedDigraph contractedG = cg.computeContractedG(root, U, k2);        
 
+        // initialize minCut object with contracted Graph 
         MinCut minCut = new MinCut(contractedG);
-        double singletonMinCutValue, smallSinkMinCutValue, sampledMinCutValue;
+        double singletonMinCutValue, smallSinkMinCutValue, sampledValue;
         
-        // min cut for singletons - Lemma 5
+        // ------------- min cut for singletons - Lemma 5 -------------
+        startTime = System.nanoTime();
         Map<String, Object> singleton = minCut.rootedConnectivity(root);
+        endTime = System.nanoTime();
+        System.out.println("Execution time of Lemma 5: "  + (endTime - startTime) / 1e6 + "ms");
         singletonMinCutValue = (double) singleton.get("lamda");  
 
-        // min cut for small sink components - at most l vertices - Lemma 8
+        // ------------- min cut for small sink components - at most l vertices - Lemma 8 -------------
+        startTime = System.nanoTime();
         Map<String, Object> smallSink = minCut.rootedConnectivityForSCCs(root, k2, U);
+        endTime = System.nanoTime();
+        System.out.println("Execution time of Lemma 8: "  + (endTime - startTime) / 1e6 + "ms");
         smallSinkMinCutValue = (double) smallSink.get("lamda");
 
         // Skip Lemma 7 in case i have found the minimum cut which is 1
-        if (singletonMinCutValue == 1 || smallSinkMinCutValue == 1) { 
-            return 1;  
+        if (singletonMinCutValue == 1 && singletonMinCutValue <= smallSinkMinCutValue) { 
+            return singleton;  
+        }else if (smallSinkMinCutValue == 1 && smallSinkMinCutValue <= singletonMinCutValue) {
+            return smallSink;
         }
         
-        // min cut for sampled sink components - Lemma 7
+        // ------------- min cut for sampled sink components - Lemma 7 -------------
+        System.out.println("\n---------- Running Lemma 7 ----------");
+        Map<String, Object> finalSampledMinCut = new HashMap<>();
         if (contractedG.V() < k1) {
             System.out.println("Warning: Contracted graph has less than k1 vertices."); 
-            sampledMinCutValue = Double.POSITIVE_INFINITY;
+            sampledValue = Double.POSITIVE_INFINITY;
         }else{
-            sampledMinCutValue = Double.POSITIVE_INFINITY;
+            sampledValue = Double.POSITIVE_INFINITY;
             int logk1 = (int) (Math.log(k1) / Math.log(2));
             int logk2 = (int) (Math.log(k2) / Math.log(2));
 
+            startTime = System.nanoTime();
             for (int i = logk1; i <= logk2; i++) {
                 int kLow = (int) Math.pow(2, i);
                 int kHigh = (int) Math.pow(2, i+1);
                 Set<Integer> sampledVertices = cg.sampleVertexGenerator(root, sinkSize, contractedG);
                 Map<String, Object> sampledSink = minCut.rootedConnectivityForSampledVertices(root, kLow, kHigh, sampledVertices);
                 double currentValue = (double) sampledSink.get("lamda");
-                sampledMinCutValue = Math.min(sampledMinCutValue, currentValue);
+                if (currentValue < sampledValue){
+                    sampledValue = currentValue;
+                    finalSampledMinCut = sampledSink;
+                }
             }
+            endTime = System.nanoTime();
+            System.out.println("\nExecution time of Lemma 7: "  + (endTime - startTime) / 1e6 + "ms");
         }
-        System.out.println(sampledMinCutValue);
-        double result = Math.min(singletonMinCutValue, Math.min(smallSinkMinCutValue, sampledMinCutValue));
-        System.out.println(result);
+        double sampledMinCutValue = (double) finalSampledMinCut.get("lamda");
 
-        // return the smallest min cut
-        return result;
+        if (singletonMinCutValue <= smallSinkMinCutValue && singletonMinCutValue <= sampledMinCutValue) {
+            return singleton;
+        }else if (smallSinkMinCutValue <= sampledMinCutValue) {
+            return smallSink;
+        }else {
+            return finalSampledMinCut;
+        }
     }
 }

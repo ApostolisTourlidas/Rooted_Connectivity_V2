@@ -200,37 +200,37 @@ public class GabowSCC {
         }
     }
     
-    // public static void main(String[] args) {
-    //     In in = new In("1. n=8 - m=25.txt");    
-    //     EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
-    //     GabowSCC scc = new GabowSCC(G);
-    //     scc.printAllSCCs();
+    public static void main(String[] args) {
+        In in = new In("2. n=84 - m=124.txt");    
+        EdgeWeightedDigraph G = new EdgeWeightedDigraph(in);
+        GabowSCC scc = new GabowSCC(G);
+        scc.printAllSCCs();
 
-    //     // number of connected components
-    //     int m = scc.count();
-    //     System.out.println(m + " components");
+        // number of connected components
+        int m = scc.count();
+        System.out.println(m + " components");
 
-    //     // compute list of vertices in each strong component
-    //     Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
-    //     for (int i = 0; i < m; i++) {
-    //         components[i] = new LinkedList<Integer>();
-    //     }
-    //     for (int v = 0; v < G.V(); v++) {
-    //         components[scc.id(v)].add(v);
-    //     }
+        // compute list of vertices in each strong component
+        Queue<Integer>[] components = (Queue<Integer>[]) new Queue[m];
+        for (int i = 0; i < m; i++) {
+            components[i] = new LinkedList<Integer>();
+        }
+        for (int v = 0; v < G.V(); v++) {
+            components[scc.id(v)].add(v);
+        }
 
-    //     // print results
-    //     for (int i = 0; i < m; i++) {
-    //         for (int v : components[i]) {
-    //             System.out.print(v + " ");
-    //         }
-    //         System.out.println();
-    //     }
+        // print results
+        for (int i = 0; i < m; i++) {
+            for (int v : components[i]) {
+                System.out.print(v + " ");
+            }
+            System.out.println();
+        }
 
-    //     for (int i = 0; i < scc.count(); i++) {
-    //         Set<Integer> sccVertices = scc.getVerticesInSCC(i);
-    //         System.out.println("To SCC " + i + " periexei autous tous komvous: " + sccVertices);
-    //     }
+        for (int i = 0; i < scc.count(); i++) {
+            Set<Integer> sccVertices = scc.getVerticesInSCC(i);
+            System.out.println("To SCC " + i + " periexei autous tous komvous: " + sccVertices);
+        }
 
-    // }
+    }
 }

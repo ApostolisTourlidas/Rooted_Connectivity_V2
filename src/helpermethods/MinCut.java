@@ -51,7 +51,7 @@ public class MinCut{
         finalResult.put("lamda", minCutValue);
         finalResult.put("sink", sinkOfMinCut);
 
-        System.out.println("Rooted Connectivity (Lemma 5) with min cut value: " + minCutValue + " and the sink component is: " + sinkOfMinCut + "\n");
+        System.out.println("Rooted Connectivity method (Lemma 5) has min cut value: " + minCutValue + " and the sink component is: " + sinkOfMinCut);
         return finalResult;
     }
 
@@ -121,15 +121,12 @@ public class MinCut{
         finalResult.put("lamda", minCutValue);
         finalResult.put("sink", sinkOfMinCut);
 
-        System.out.println("Final Minimum r-Cut Value (Lemma 8): " + minCutValue);
-        System.out.println("Final Sink Component of minimum cut (Lemma 8): " + sinkOfMinCut + "\n");
-
+        System.out.println("Small sink components method (Lemma 8) has min cut value: " + minCutValue + "and the sink component is: " + sinkOfMinCut);
         return finalResult;
     }
 
     // iterate over sampled vertices in the graph to find the value of lamda (Lemma 7)
     public Map<String, Object> rootedConnectivityForSampledVertices(int root, int kLow, int kHigh, Set<Integer> sampledVertices){
-        System.out.println("\n---------- Running Lemma 7 ----------");
         FordFulkerson ff = new FordFulkerson(G, root);
         
         Map<String, Object> finalResult = new HashMap<>();
@@ -155,7 +152,7 @@ public class MinCut{
             }
         }
 
-        System.out.println("Final Minimum r-Cut Value (Lemma 7): " + finalResult.get("lamda") + "and sink component is: " + finalResult.get("sink"));
+        System.out.println("Sampling vertices method (Lemma 7): " + finalResult.get("lamda") + " and the sink component is: " + finalResult.get("sink"));
         return finalResult;
     }
 
